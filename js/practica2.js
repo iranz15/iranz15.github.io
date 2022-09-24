@@ -1,8 +1,5 @@
-/**
-* Grafo.js
-* Carga un grafo de escena en Threejs y lo visualiza
-*
-*/
+
+
 import * as THREE from 'three';
 import { OrbitControls } from 'https://unpkg.com/three@0.140.1/examples/jsm/controls/OrbitControls.js';
 
