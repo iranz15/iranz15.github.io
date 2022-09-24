@@ -1,0 +1,41 @@
+<!doctype html>
+<!--
+    Practica 2
+-->
+<html lang="es">
+    <head>
+        <meta charset="utf-8">
+        <title>Aplicacion en Threejs</title>
+        <style>
+            body{ color:rgb(180, 0, 0);margin: 0px;overflow: hidden;}
+            #info {
+	            position: absolute;
+	            bottom: 0px;
+                left: 50px;
+	            width: 30%;
+	            text-align: left;
+	            z-index: 1; 
+            }
+        </style>
+    </head>
+    <body>
+
+        <div id="container"></div>
+
+        <div id="info">
+            <h2>Practica 2: Jorge Iranzo</h2> 
+        </div>
+
+      
+        <script async src="https://unpkg.com/es-module-shims@1.5.18/dist/es-module-shims.js"></script> 
+
+        <!-- Declaracion del espacio de nombres three -->
+        <script type="importmap">
+            {"imports": {"three": "https://unpkg.com/three@0.140.1/build/three.module.js"}}
+        </script>
+
+        <!-- Sustituir por el el script propio -->
+        <script type="module" src="js/practica2.js"></script>
+
+    </body>
+</html>
