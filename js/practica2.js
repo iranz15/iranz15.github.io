@@ -8,6 +8,10 @@ let scene,camera,renderer,robot;
 let cameraControls;
 let L=5;
 let planta,alzado,perfil;
+const normales = [];
+
+
+
 init();
 loadScene();
 render();
@@ -32,7 +36,7 @@ function init() {
 function loadScene() {
 
     //Materiales
-    //onst matBase = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false });
+    // const matBase = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
     const matBase = new THREE.MeshNormalMaterial()
     //Geometrias
     const geometriaSuelo = new THREE.PlaneGeometry(1000, 1000, 20, 20)
@@ -128,25 +132,59 @@ function loadScene() {
 
     ]
     // ^i(a2b3−a3b2)−^j(a1b3−a3b1)+^k(a1b2−a2b1)
-    var normales = [ // 24 x3
-
+     // 24 x3
+    /*
     0,0,1, 0,0,1, 0,0,1, 0,0,1,      // Front
     1,0,0, 1,0,0, 1,0,0, 1,0,0,      // Right
     0,0,-1, 0,0,-1, 0,0,-1, 0,0,-1,  // Back 
     -1,0,0, -1,0,0, -1,0,0, -1,0,0,  // Left
     0,1,0, 0,1,0, 0,1,0, 0,1,0,      // Top 
     0,-1,0, 0,-1,0, 0,-1,0, 0,-1,0   // Bottom
-    ];
+    */
 
     geometriaDedoPinza.setIndex( indices );
     geometriaDedoPinza.setAttribute( 'position', new THREE.Float32BufferAttribute(posicion,3));
     const bufferPosition = geometriaDedoPinza.getAttribute('position');
+    const pv = [] // Position vectorised
+     
     for(let i = 0;i<posicion.length/3;i++){
-        const b = new THREE.Vector3( );
-        b.fromBufferAttribute(bufferPosition,i)
+        const v1 = new THREE.Vector3( );
+        v1.fromBufferAttribute(bufferPosition,i)
+        pv.push(v1)
+    }
+    console.log(pv)
+
+    var norm = (x,y,i) =>
+    {
+        const normal = new THREE.Vector3();
+        const a = new THREE.Vector3();
+        const b = new THREE.Vector3();
+        a.subVectors ( x, i )
+        b.subVectors ( y ,i )
+        normal.crossVectors(a,b)
+        normales.push(normal.x,normal.y,normal.z)
+        //console.log(normal)
     }
 
+    norm(pv[1],pv[3], pv[0]);   norm(pv[0],pv[2], pv[1]);    norm(pv[1],pv[3], pv[2]);   norm(pv[2],pv[0], pv[3]);//delante
+    norm(pv[5],pv[7], pv[3]);    norm(pv[4],pv[6], pv[2]);   norm(pv[7],pv[5], pv[4]);    norm(pv[6],pv[4], pv[5]); //arriba
+    norm(pv[4],pv[6], pv[5]);    norm(pv[7],pv[5], pv[4]);   norm(pv[6],pv[4], pv[7]);    norm(pv[5],pv[7], pv[6]); //atras
+    norm(pv[6],pv[1], pv[0]);    norm(pv[7],pv[0], pv[6]);   norm(pv[1],pv[6], pv[7]);    norm(pv[0],pv[7], pv[1]); //abajo
+    norm(pv[7],pv[2], pv[1]);    norm(pv[4],pv[1], pv[7]);   norm(pv[7],pv[2], pv[4]);    norm(pv[1],pv[4], pv[10]); //derecha
+    norm(pv[3],pv[6], pv[0]);    norm(pv[5],pv[0], pv[3]);   norm(pv[6],pv[3], pv[5]);    norm(pv[0],pv[5], pv[6]); //izquierda
+
+    /*
+    norm(pv[1],pv[3]);   norm(pv[0],pv[2]);    norm(pv[1],pv[3]);   norm(pv[2],pv[0]);//delante
+    norm(pv[5],pv[7]);    norm(pv[4],pv[6]);   norm(pv[7],pv[5]);    norm(pv[6],pv[4]); //arriba
+    norm(pv[11],pv[8]);    norm(pv[9],pv[10]);   norm(pv[8],pv[11]);    norm(pv[10],pv[9]); //atras
+    norm(pv[12],pv[14]);    norm(pv[13],pv[15]);   norm(pv[12],pv[14]);    norm(pv[13],pv[15]); //abajo
+    norm(pv[19],pv[17]);    norm(pv[19],pv[18]);   norm(pv[17],pv[19]);    norm(pv[18],pv[19]); //derecha
+    norm(pv[21],pv[23]);    norm(pv[20],pv[22]);   norm(pv[23],pv[21]);    norm(pv[22],pv[20]); //izquierda
+    */
+    
+    
     geometriaDedoPinza.setAttribute( 'normal', new THREE.Float32BufferAttribute(normales,3));
+    console.log(normales)
 
     //Meshes
     robot = new THREE.Object3D();
