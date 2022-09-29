@@ -168,10 +168,19 @@ function loadScene() {
 
     norm(pv[1],pv[3], pv[0]);   norm(pv[0],pv[2], pv[1]);    norm(pv[1],pv[3], pv[2]);   norm(pv[2],pv[0], pv[3]);//delante
     norm(pv[5],pv[7], pv[3]);    norm(pv[4],pv[6], pv[2]);   norm(pv[7],pv[5], pv[4]);    norm(pv[6],pv[4], pv[5]); //arriba
+    norm(pv[4],pv[6], pv[5]);    norm(pv[7],pv[5], pv[4]);   norm(pv[6],pv[4], pv[7]);    norm(pv[5],pv[7], pv[6]); //atras mal
+    norm(pv[6],pv[1], pv[0]);    norm(pv[7],pv[0], pv[6]);   norm(pv[1],pv[6], pv[7]);    norm(pv[0],pv[7], pv[1]); //abajo mal
+    norm(pv[7],pv[2], pv[1]);    norm(pv[4],pv[1], pv[7]);   norm(pv[7],pv[2], pv[4]);    norm(pv[1],pv[4], pv[2]); //derecha
+    norm(pv[3],pv[6], pv[0]);    norm(pv[5],pv[0], pv[3]);   norm(pv[6],pv[3], pv[5]);    norm(pv[0],pv[5], pv[6]); //izquierda
+
+    /*
+    norm(pv[1],pv[3], pv[0]);   norm(pv[0],pv[2], pv[1]);    norm(pv[1],pv[3], pv[2]);   norm(pv[2],pv[0], pv[3]);//delante
+    norm(pv[5],pv[7], pv[3]);    norm(pv[4],pv[6], pv[2]);   norm(pv[7],pv[5], pv[4]);    norm(pv[6],pv[4], pv[5]); //arriba
     norm(pv[4],pv[6], pv[5]);    norm(pv[7],pv[5], pv[4]);   norm(pv[6],pv[4], pv[7]);    norm(pv[5],pv[7], pv[6]); //atras
     norm(pv[6],pv[1], pv[0]);    norm(pv[7],pv[0], pv[6]);   norm(pv[1],pv[6], pv[7]);    norm(pv[0],pv[7], pv[1]); //abajo
     norm(pv[7],pv[2], pv[1]);    norm(pv[4],pv[1], pv[7]);   norm(pv[7],pv[2], pv[4]);    norm(pv[1],pv[4], pv[10]); //derecha
     norm(pv[3],pv[6], pv[0]);    norm(pv[5],pv[0], pv[3]);   norm(pv[6],pv[3], pv[5]);    norm(pv[0],pv[5], pv[6]); //izquierda
+    */
 
     /*
     norm(pv[1],pv[3]);   norm(pv[0],pv[2]);    norm(pv[1],pv[3]);   norm(pv[2],pv[0]);//delante
