@@ -37,7 +37,7 @@ function loadScene() {
 
     //Materiales
     // const matBase = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
-    const matBase = new THREE.MeshNormalMaterial()
+    const matBase = new THREE.MeshNormalMaterial({wireframe: false, flatShading:true});
     //Geometrias
     const geometriaSuelo = new THREE.PlaneGeometry(1000, 1000, 20, 20)
     const geometriaBase = new THREE.CylinderGeometry(50, 50, 15, 30);
@@ -161,12 +161,15 @@ function loadScene() {
         const b = new THREE.Vector3();
         a.subVectors ( x, i )
         b.subVectors ( y ,i )
+        //a.normalize()
+        //b.normalize()
         normal.crossVectors(a,b)
+        normal.normalize()
         normales.push(normal.x,normal.y,normal.z)
-        //console.log(normal)
+        console.log(normal)
     }
 
-    norm(pv[1],pv[3], pv[0]);   norm(pv[0],pv[2], pv[1]);    norm(pv[1],pv[3], pv[2]);   norm(pv[2],pv[0], pv[3]);//delante
+    norm(pv[1],pv[3], pv[0]);   norm(pv[2],pv[0], pv[1]);    norm(pv[1],pv[3], pv[2]);   norm(pv[2],pv[0], pv[3]);//delante
     norm(pv[5],pv[7], pv[3]);    norm(pv[4],pv[6], pv[2]);   norm(pv[7],pv[5], pv[4]);    norm(pv[6],pv[4], pv[5]); //arriba
     norm(pv[4],pv[6], pv[5]);    norm(pv[7],pv[5], pv[4]);   norm(pv[6],pv[4], pv[7]);    norm(pv[5],pv[7], pv[6]); //atras mal
     norm(pv[6],pv[1], pv[0]);    norm(pv[7],pv[0], pv[6]);   norm(pv[1],pv[6], pv[7]);    norm(pv[0],pv[7], pv[1]); //abajo mal
@@ -303,6 +306,6 @@ function render() {
     renderer.render(scene, camera);
 }
 function update() {
-    angulo += 0.01;
+    angulo += 0.00;
     robot.rotation.y = angulo;
 }
