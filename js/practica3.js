@@ -343,6 +343,7 @@ function loadScene() {
 
 }
 
+
 function render() {
     requestAnimationFrame(render);
     update();

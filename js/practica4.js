@@ -1,16 +1,23 @@
 
 
 import * as THREE from 'three';
+import { OrbitControls } from 'https://unpkg.com/three@0.140.1/examples/jsm/controls/OrbitControls.js';
+import {TWEEN} from '../lib/tween.module.min.js'
+import {GUI} from '../lib/lil-gui.module.min.js'
 
 let angulo = 0;
 let scene,camera,renderer,robot;
-let L=5;
+let cameraControls, animationController;
+let brazo,antebrazo,pinzas,pinzaMeshI,pinzaMeshD;
+let separadorPinzas = 8;
+let matBase;
+let L=100;
+let planta,alzado,perfil,cenital;
 const normales = [];
-
-
 
 init();
 loadScene();
+setupGUI();
 render();
 
 function init() {
@@ -18,21 +25,58 @@ function init() {
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(new THREE.Color(0xffffff));
+    renderer.autoClear = false;
     document.getElementById('container').appendChild(renderer.domElement);
 
     scene = new THREE.Scene();
-
+    
+    const ar = window.innerWidth/window.innerHeight;
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(120, 250, 220);
     camera.lookAt(new THREE.Vector3(0, 135, 0));
 
+    setCameras(ar);
+    
+    cameraControls = new OrbitControls( camera,renderer.domElement );
+    cameraControls.target.set(0,135,0)
+    window.addEventListener('resize', updateAspectRatio );
 }
+
+function setCameras(ar)
+{
+    let camaraOrto;
+
+    // Construir las camaras ortograficas
+    
+    camaraOrto = new THREE.OrthographicCamera(-L/2,L/2,L/2,-L/2,1,1000);
+
+    cenital = camaraOrto.clone();
+    cenital.position.set(0,L+200,0);
+
+    cenital.up = new THREE.Vector3(0,-1,0);
+    cenital.lookAt(0,0,0);
+  
+}
+
+function updateAspectRatio()
+{
+    renderer.setSize(window.innerWidth,window.innerHeight);
+    const ar = window.innerWidth/window.innerHeight;
+
+    // perspectiva
+    camera.aspect = ar;
+    camera.updateProjectionMatrix();
+
+    // ortografica
+    cenital.updateProjectionMatrix();
+}
+
 
 function loadScene() {
 
     //Materiales
     // const matBase = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
-    const matBase = new THREE.MeshNormalMaterial({wireframe: false, flatShading: true});
+    matBase = new THREE.MeshNormalMaterial({wireframe: false, flatShading: true});
     //Geometrias
     const geometriaSuelo = new THREE.PlaneGeometry(1000, 1000, 20, 20)
     const geometriaBase = new THREE.CylinderGeometry(50, 50, 15, 30);
@@ -196,7 +240,7 @@ function loadScene() {
     const base = new THREE.Mesh(geometriaBase, matBase);
     base.position.set(0, 0, 0);
 
-    const brazo = new THREE.Object3D();
+    brazo = new THREE.Object3D();
     
     const eje = new THREE.Mesh(geometriaEje, matBase)
     eje.rotateZ(Math.PI / 2);
@@ -208,7 +252,7 @@ function loadScene() {
     const rotula = new THREE.Mesh(geometriaRotula, matBase)
     rotula.position.set(0, 120, 0);
     
-    const antebrazo = new THREE.Object3D();
+    antebrazo = new THREE.Object3D();
     antebrazo.position.set(0, 120, 0);
   
     const disco = new THREE.Mesh(geometriaDisco, matBase);
@@ -234,33 +278,21 @@ function loadScene() {
     mano.rotateZ(Math.PI / 2);
     mano.position.set(0, 70, 0);
     
-
+    const pinzas = new THREE.Object3D(); 
     const pinzaI = new THREE.Object3D(); 
     const pinzaD = new THREE.Object3D().copy(pinzaI);
 
-    const pinzaMeshI = new THREE.Mesh(geometriaPinza, matBase);
-    const pinzaMeshD = new THREE.Mesh(geometriaPinza, matBase);
+    pinzaMeshI = new THREE.Mesh(geometriaPinza, matBase);
+    pinzaMeshD = new THREE.Mesh(geometriaPinza, matBase);
 
     pinzaI.add(pinzaMeshD);
     pinzaD.add(pinzaMeshI);
 
     const myAxis = new THREE.Vector3(0, 0, 1);
-    //pinzaMeshI.rotateOnWorldAxis(myAxis,Math.PI/2);
     pinzaMeshI.rotateZ(Math.PI/2);
     pinzaMeshD.rotateZ(-Math.PI/2);
-
-
-    pinzaMeshI.position.set(10, 8, 0);
+    pinzaMeshI.position.set(10, 8 , 0);
     pinzaMeshD.position.set(-10, -8, 0);
-
-
-        /*
-        scene.attach( child ); // detach from parent and add to scene
-
-        child.position.set( x, y, z );
-
-        parent.attach( child );
-        */
 
     const suelo = new THREE.Mesh(geometriaSuelo, matBase)
     suelo.rotateX(-Math.PI / 2);
@@ -288,8 +320,9 @@ function loadScene() {
     antebrazo.add(disco);
     antebrazo.add(mano);
 
-    mano.add(pinzaI);
-    mano.add(pinzaD);
+    mano.add(pinzas)
+    pinzas.add(pinzaI);
+    pinzas.add(pinzaD);
 
 
 
@@ -300,9 +333,108 @@ function loadScene() {
 function render() {
     requestAnimationFrame(render);
     update();
+    renderer.clear();
+    const ar = window.innerWidth/window.innerHeight;
+    
+    if (ar > 1){
+        renderer.setViewport(0,window.innerHeight * 3/4,window.innerHeight *1/4,window.innerHeight *1/4);
+    }
+    else{
+        renderer.setViewport(0,window.innerHeight - window.innerWidth/4,window.innerWidth/4, window.innerWidth/4);
+    }
+    
+    renderer.render(scene, cenital);
+    //Abajo derecha
+    renderer.setViewport(0,0,window.innerWidth,window.innerHeight);
     renderer.render(scene, camera);
+    
 }
+
+function setupGUI()
+{
+	// Definicion de los controles
+	animationController = {
+		mensaje: 'Controles de animación brazo robótico',
+		giroBase: 0.0,
+        giroBrazoEje: 0.0,
+        giroAntebrazoY: 0.0,
+        giroAntebrazoX: 0.0,
+        giroPinzas: 0.0,
+        distanciaPinzas: 8.0,
+        wireframe: false
+
+	};
+
+	// Creacion interfaz
+	const gui = new GUI( {title: 'Controls Robot'} );
+
+    // En comparación al ejemplo de poliformat,
+    // debido a como se han declarado las dimensiones de la escena,
+    // en los controles los giros sobre el eje Z se han tranformado en giros sobre X
+	// Construccion del menu
+
+    gui.add(animationController, "giroBase", -180,180)
+        .name("Giro Base")
+        .listen()
+        .onChange(a =>{  
+            robot.rotation.y = a * Math.PI/180
+        });
+
+    gui.add(animationController, "giroBrazoEje", -45,45)
+    .name("Giro Brazo")
+    .listen()
+    .onChange(a =>{  
+        brazo.rotation.x = a * Math.PI/180
+        });
+
+    gui.add(animationController, "giroAntebrazoY", -180,180)
+    .name("Giro AnteBrazo Y ")
+    .listen()
+    .onChange(a =>{  
+        antebrazo.rotation.y = a * Math.PI/180
+        });
+
+    gui.add(animationController, "giroAntebrazoX", -90,90)
+    .name("Giro AnteBrazo X ")
+    .listen()
+    .onChange(a =>{  
+        antebrazo.rotation.x = a * Math.PI/180
+        });
+
+    gui.add(animationController, "giroPinzas", -40,220)
+    .name("Giro Pinza ")
+    .listen()
+    .onChange(a =>{  
+        pinzas.rotation.y = a * Math.PI/180
+        });
+        gui.add(animationController, "distanciaPinzas", 0,15)
+        .name("Distancia pinzas ")
+        .listen()
+        .onChange(d =>{  
+            pinzaMeshI.position.y = d
+            pinzaMeshD.position.y = -d
+            });
+
+    gui.add( animationController, 'wireframe' )
+    .name("Alambre")
+    .listen()
+    .onChange(w =>{
+        if(matBase.wireframe) matBase.wireframe = false;
+        else matBase.wireframe = true;
+        });  // Checkbox
+        
+    
+
+    /*
+	h.add(animationController, "mensaje").name("Aplicacion");
+	h.add(animationController, "giroY", -180.0, 180.0, 0.025).name("Giro en Y");
+	h.add(animationController, "separacion", { 'Ninguna': 0, 'Media': 2, 'Total': 5 }).name("Separacion");
+    h.addColor(animationController, "colorsuelo").name("Color alambres");
+    */
+}
+
 function update() {
-    angulo += 0.01;
-    robot.rotation.y = angulo;
+    //robot.rotation.y = angulo;
+    
 }
+
