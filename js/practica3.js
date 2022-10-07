@@ -46,25 +46,20 @@ function setCameras(ar)
     let camaraOrto;
 
     // Construir las camaras ortograficas
-    if(ar>1)
-     camaraOrto = new THREE.OrthographicCamera(-L*ar,L*ar,L,-L,1,1000);
-    else
-     camaraOrto = new THREE.OrthographicCamera(-L,L,L/ar,-L/ar,1,1000);
+    
+    camaraOrto = new THREE.OrthographicCamera(-L/2,L/2,L/2,-L/2,1,1000);
 
     cenital = camaraOrto.clone();
-    cenital.position.set(0,5*L,0);
+    cenital.position.set(0,L+110,0);
 
-    cenital.up = new THREE.Vector3(0,1,0);
+    cenital.up = new THREE.Vector3(0,-1,0);
     cenital.lookAt(0,0,0);
   
 }
 
 function updateAspectRatio()
 {
-    // Cambia las dimensiones del canvas
     renderer.setSize(window.innerWidth,window.innerHeight);
-
-    // Nuevo relacion aspecto de la camara
     const ar = window.innerWidth/window.innerHeight;
 
     // perspectiva
@@ -72,25 +67,10 @@ function updateAspectRatio()
     camera.updateProjectionMatrix();
 
     // ortografica
-    if(ar>1){
-        /* alzado.left = planta.left = perfil.left = -L*ar;
-        alzado.right = planta.right =perfil.right = L*ar; */
-        cenital.left = -L*ar
-        cenital.right = L*ar
-    }
-    else{
-        /* alzado.top = planta.top= perfil.top=  L/ar;
-        alzado.bottom = planta.bottom = perfil.bottom = -L/ar; */
-        cenital.top = L*ar
-        cenital.bottom = -L*ar
-               
-    }
+    
+
+    
  
-    /*
-    alzado.updateProjectionMatrix();
-    perfil.updateProjectionMatrix();
-    planta.updateProjectionMatrix();
-    */
     cenital.updateProjectionMatrix();
 }
 
@@ -98,7 +78,7 @@ function loadScene() {
 
     //Materiales
     // const matBase = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
-    const matBase = new THREE.MeshNormalMaterial({wireframe: false, flatShading: false});
+    const matBase = new THREE.MeshNormalMaterial({wireframe: false, flatShading: true});
     //Geometrias
     const geometriaSuelo = new THREE.PlaneGeometry(1000, 1000, 20, 20)
     const geometriaBase = new THREE.CylinderGeometry(50, 50, 15, 30);
@@ -112,57 +92,70 @@ function loadScene() {
 
     const geometriaMano = new THREE.CylinderGeometry(15, 15, 40, 30);
 
-    const geometriaPinzaParalepipedo = new THREE.BoxGeometry(4, 20, 19);
-    const geometriaDedoPinza = new THREE.BufferGeometry();
+    const geometriaPinza = new THREE.BufferGeometry();
 
     // Variables de ajuste de posicion
     const posicion = [
-        /*
-        0,5-y,38-z, //0
-        2,5-y,38-z, //1
-        2,15-y,38-z, //2 
-        0,15-y,38-z, //3
-        2,20-y,19-z, //4
-        0,20-y,19-z, //5
-        0,0-y,19-z, //6
-        2,0-y,19-z, //7
-        */
+
         //Delante
-        0,5,19, //0 -> 0 
-        2,5,19, //1 -> 1
-        2,15,19, //2 -> 2
-        0,15,19, //3 ->  3
+        0,5,38, //0 -> 0 
+        2,5,38, //1 -> 1
+        2,15,38, //2 -> 2
+        0,15,38, //3 ->  3
 
         //Arriba
-        0,15,19, //3 -> 4
-        2,15,19, //2 -> 5
-        4,20,0, //4 -> 6
-        0,20,0, //5 -> 7
+        0,15,38, //3 -> 4
+        2,15,38, //2 -> 5
+        4,20,19, //4 -> 6
+        0,20,19, //5 -> 7
         
-        //atras
-        4,20,0, //4 -> 8
-        0,20,0, //5 -> 9
-        4,0,0, //7 -> 10
-        0,0,0, //6 -> 11
+        //atras/para_delante
+        4,20,19, //4 -> 8
+        0,20,19, //5 -> 9
+        4,0,19, //7 -> 10
+        0,0,19, //6 -> 11
 
         //abajo
-        2,5,19, //1 -> 12 
-        0,5,19, //0 -> 13
-        0,0,0, //6 -> 14
-        4,0,0, //7 ->  15
+        2,5,38, //1 -> 12 
+        0,5,38, //0 -> 13
+        0,0,19, //6 -> 14
+        4,0,19, //7 ->  15
 
         //derecha
-        2,5,19, //1 -> 16
-        4,0,0, //7 -> 17
-        4,20,0, //4 -> 18
-        2,15,19, //2 -> 0
+        2,5,38, //1 -> 16
+        4,0,19, //7 -> 17
+        4,20,19, //4 -> 18
+        2,15,38, //2 -> 19
 
         //izquierda
-        0,5,19, //0 ->  20
-        0,15,19, //3 -> 21 
-        0,20,0, //5 -> 22
-        0,0,0 //6 ->  23
+        0,5,38, //0 ->  20
+        0,15,38, //3 -> 21 
+        0,20,19, //5 -> 22
+        0,0,19, //6 ->  23
 
+        //para arriba
+        0,20,19, //5 -> 24
+        4,20,19, //4 -> 25
+        4,20,0, //8 -> 26
+        0,20,0, //9 -> 27
+
+        //para abajo
+        0,0,19, //6 ->  28
+        4,0,19, //7 -> 29
+        4,0,0, //10 -> 30
+        0,0,0, //11 -> 31
+
+        //para derecha
+        4,20,19, //4 -> 32
+        4,0,19, //7 -> 33
+        4,20,0, //8 -> 34
+        4,0,0, //10 -> 35        
+
+        //para izqueirda
+        0,20,19, //5 -> 36
+        0,0,19, //6 ->  37
+        0,20,0, //9 -> 38
+        0,0,0 //11 -> 39
     ]
 
   
@@ -187,12 +180,25 @@ function loadScene() {
         18,19,16,
         //izquierda
         20,21,22,
-        22,23,20
+        22,23,20,
+        
+        //para arriba
+        24,25,26,
+        26,27,24,
+        //para abajo
+        28,31,30,
+        30,29,28,
+        //para derecha
+        33,35,34,
+        34,32,33,
+        //para izquierda
+        37,36,38,
+        38,39,37
 
     ]
-    geometriaDedoPinza.setIndex( indices );
-    geometriaDedoPinza.setAttribute( 'position', new THREE.Float32BufferAttribute(posicion,3));
-    const bufferPosition = geometriaDedoPinza.getAttribute('position');
+    geometriaPinza.setIndex( indices );
+    geometriaPinza.setAttribute( 'position', new THREE.Float32BufferAttribute(posicion,3));
+    const bufferPosition = geometriaPinza.getAttribute('position');
     const pv = [] // Position vectorised
      
     for(let i = 0;i<posicion.length/3;i++){
@@ -222,9 +228,13 @@ function loadScene() {
     norm(pv[13],pv[15], pv[12]);    norm(pv[14],pv[12], pv[13]);   norm(pv[15],pv[13], pv[14]);    norm(pv[12],pv[14], pv[15]); //abajo 
     norm(pv[17],pv[19], pv[16]);    norm(pv[18],pv[16], pv[17]);   norm(pv[19],pv[17], pv[18]);    norm(pv[16],pv[18], pv[19]); //derecha
     norm(pv[21],pv[23], pv[20]);    norm(pv[22],pv[20], pv[21]);   norm(pv[23],pv[21], pv[22]);    norm(pv[20],pv[22], pv[23]); //izquierda
+    norm(pv[25],pv[27], pv[24]);    norm(pv[26],pv[24], pv[25]);   norm(pv[27],pv[25], pv[26]);    norm(pv[24],pv[26], pv[27]);//para arriba
+    norm(pv[31],pv[29], pv[28]);    norm(pv[28],pv[30], pv[29]);   norm(pv[29],pv[31], pv[30]);    norm(pv[30],pv[28], pv[31]); //para abajo 
+    norm(pv[33],pv[34], pv[32]);    norm(pv[35],pv[32], pv[33]);   norm(pv[32],pv[35], pv[34]);    norm(pv[34],pv[33], pv[35]); // para derecha
+    norm(pv[38],pv[37], pv[36]);    norm(pv[36],pv[39], pv[37]);   norm(pv[39],pv[36], pv[38]);    norm(pv[37],pv[38], pv[39]); //para izquierda
     
     
-    geometriaDedoPinza.setAttribute( 'normal', new THREE.Float32BufferAttribute(normales,3));
+    geometriaPinza.setAttribute( 'normal', new THREE.Float32BufferAttribute(normales,3));
     console.log(normales)
 
     //Meshes
@@ -273,28 +283,21 @@ function loadScene() {
 
     const pinzaI = new THREE.Object3D(); 
     const pinzaD = new THREE.Object3D().copy(pinzaI);
-    const pinzaBaseI = new THREE.Mesh(geometriaPinzaParalepipedo, matBase)
-    const pinzaBaseD = new THREE.Mesh(geometriaPinzaParalepipedo, matBase)
 
-    const pinzaDedoI = new THREE.Mesh(geometriaDedoPinza, matBase);
-    const pinzaDedoD = new THREE.Mesh(geometriaDedoPinza, matBase);
+    const pinzaMeshI = new THREE.Mesh(geometriaPinza, matBase);
+    const pinzaMeshD = new THREE.Mesh(geometriaPinza, matBase);
 
-    
-    pinzaBaseI.rotateY(Math.PI / 2);
-    pinzaBaseD.rotateY(Math.PI / 2);
+    pinzaI.add(pinzaMeshD);
+    pinzaD.add(pinzaMeshI);
 
-    pinzaBaseI.rotateZ(-Math.PI / 2);
-    pinzaBaseD.rotateZ(-Math.PI / 2);
+    const myAxis = new THREE.Vector3(0, 0, 1);
+    //pinzaMeshI.rotateOnWorldAxis(myAxis,Math.PI/2);
+    pinzaMeshI.rotateZ(Math.PI/2);
+    pinzaMeshD.rotateZ(-Math.PI/2);
 
-    pinzaDedoI.rotateZ(-Math.PI / 2);
-    pinzaDedoD.rotateZ(-Math.PI / 2);
 
-    pinzaDedoI.position.set(-10.5, 10, 18);
-    
-    pinzaDedoD.position.set(-10, -10, 16);
-
-    pinzaBaseI.position.set(0, 8, 6);
-    pinzaBaseD.position.set(0, -8, 6);
+    pinzaMeshI.position.set(10, 8, 0);
+    pinzaMeshD.position.set(-10, -8, 0);
 
 
         /*
@@ -334,10 +337,7 @@ function loadScene() {
     mano.add(pinzaI);
     mano.add(pinzaD);
 
-    pinzaI.add(pinzaBaseI);
-    pinzaD.add(pinzaBaseD);
-    pinzaI.add(pinzaDedoI);
-    pinzaD.add(pinzaDedoD);
+
 
     scene.add(suelo);
 
@@ -364,7 +364,7 @@ function render() {
 }
 
 function update() {
-    angulo += 0.00;
+    angulo += 0.01;
     robot.rotation.y = angulo;
 }
 
