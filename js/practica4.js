@@ -8,11 +8,12 @@ import {GUI} from '../lib/lil-gui.module.min.js'
 let angulo = 0;
 let scene,camera,renderer,robot;
 let cameraControls, animationController;
-let brazo,antebrazo,pinzas,pinzaMeshI,pinzaMeshD;
+let brazo,antebrazo,pinzas,pinzaMeshI,pinzaMeshD,gui;
 let separadorPinzas = 8;
 let matBase;
 let L=100;
 let planta,alzado,perfil,cenital;
+let gb;
 const normales = [];
 
 init();
@@ -278,7 +279,7 @@ function loadScene() {
     mano.rotateZ(Math.PI / 2);
     mano.position.set(0, 70, 0);
     
-    const pinzas = new THREE.Object3D(); 
+    pinzas = new THREE.Object3D(); 
     const pinzaI = new THREE.Object3D(); 
     const pinzaD = new THREE.Object3D().copy(pinzaI);
 
@@ -361,24 +362,31 @@ function setupGUI()
         giroAntebrazoX: 0.0,
         giroPinzas: 0.0,
         distanciaPinzas: 8.0,
-        wireframe: false
+        wireframe: false,
+        animacion: function() { 
+                new TWEEN.Tween( animationController).
+                to( {giroBase:[-180,180],
+
+                } ,5000 ).
+                interpolation( TWEEN.Interpolation.Linear ).
+                easing( TWEEN.Easing.Exponential.InOut ).
+                start();
+        }
 
 	};
 
 	// Creacion interfaz
-	const gui = new GUI( {title: 'Controls Robot'} );
+	gui = new GUI( {title: 'Controls Robot'} );
 
     // En comparación al ejemplo de poliformat,
     // debido a como se han declarado las dimensiones de la escena,
     // en los controles los giros sobre el eje Z se han tranformado en giros sobre X
 	// Construccion del menu
 
-    gui.add(animationController, "giroBase", -180,180)
+    gb = gui.add(animationController, "giroBase", -180,180)
         .name("Giro Base")
         .listen()
-        .onChange(a =>{  
-            robot.rotation.y = a * Math.PI/180
-        });
+
 
     gui.add(animationController, "giroBrazoEje", -45,45)
     .name("Giro Brazo")
@@ -407,13 +415,14 @@ function setupGUI()
     .onChange(a =>{  
         pinzas.rotation.y = a * Math.PI/180
         });
-        gui.add(animationController, "distanciaPinzas", 0,15)
-        .name("Distancia pinzas ")
-        .listen()
-        .onChange(d =>{  
-            pinzaMeshI.position.y = d
-            pinzaMeshD.position.y = -d
-            });
+
+    gui.add(animationController, "distanciaPinzas", 0,15)
+    .name("Distancia pinzas ")
+    .listen()
+    .onChange(d =>{  
+        pinzaMeshI.position.y = d
+        pinzaMeshD.position.y = -d
+        });
 
     gui.add( animationController, 'wireframe' )
     .name("Alambre")
@@ -422,7 +431,11 @@ function setupGUI()
         if(matBase.wireframe) matBase.wireframe = false;
         else matBase.wireframe = true;
         });  // Checkbox
-        
+
+    gui.add( animationController, 'animacion' )
+    .name("Animacion").listen() 
+    
+
     
 
     /*
@@ -434,7 +447,14 @@ function setupGUI()
 }
 
 function update() {
-    //robot.rotation.y = angulo;
+
+    // Si se utilia la fucnion onChange de los controladores para ejecutar las animaciones,
+    // no se actualiza adecuadamene el GUI.
+
+    robot.rotation.y = animationController.giroBase * Math.PI/180
+    TWEEN.update();
     
+    
+
 }
 
