@@ -364,94 +364,96 @@ function setupGUI()
         distanciaPinzas: 8.0,
         wireframe: false,
         animacion: function() { 
-                new TWEEN.Tween( animationController).
-                to( {giroBase:[-180,180],
-
-                } ,5000 ).
+                const keyframe1=  new TWEEN.Tween( animationController).
+                to( {giroBase:40,
+                    giroBrazoEje:45,
+                    giroAntebrazoX:60,
+                    giroPinzas:100
+                } ,3000 ).
+                interpolation( TWEEN.Interpolation.Bezier ).
+                easing( TWEEN.Easing.Quadratic.InOut )
+            
+                const keyframe2=  new TWEEN.Tween( animationController).
+                to( {distanciaPinzas:[0,10],
+                    giroAntebrazoY:[-20,20,0],
+                    giroPinzas:70
+                } ,2500 ).
                 interpolation( TWEEN.Interpolation.Linear ).
-                easing( TWEEN.Easing.Exponential.InOut ).
-                start();
+                easing( TWEEN.Easing.Quintic.InOut )
+                
+                const keyframe3=  new TWEEN.Tween( animationController).
+                to( {giroBase:0,
+                    giroBrazoEje:0,
+                    giroAntebrazoX:0,
+                    giroPinzas:0
+                } ,3000 ).
+                interpolation( TWEEN.Interpolation.Bezier ).
+                easing( TWEEN.Easing.Quadratic.InOut )
+                keyframe2.chain(keyframe3)
+                keyframe1.chain(keyframe2)
+                
+                keyframe1.start();
+
+
         }
 
 	};
 
 	// Creacion interfaz
 	gui = new GUI( {title: 'Controls Robot'} );
-
-    // En comparación al ejemplo de poliformat,
-    // debido a como se han declarado las dimensiones de la escena,
-    // en los controles los giros sobre el eje Z se han tranformado en giros sobre X
-	// Construccion del menu
-
-    gb = gui.add(animationController, "giroBase", -180,180)
-        .name("Giro Base")
-        .listen()
-
+    gui.add(animationController, "giroBase", -180,180)
+    .name("Giro Base")
+    .listen()
 
     gui.add(animationController, "giroBrazoEje", -45,45)
     .name("Giro Brazo")
     .listen()
-    .onChange(a =>{  
-        brazo.rotation.x = a * Math.PI/180
-        });
-
+      
     gui.add(animationController, "giroAntebrazoY", -180,180)
     .name("Giro AnteBrazo Y ")
     .listen()
-    .onChange(a =>{  
-        antebrazo.rotation.y = a * Math.PI/180
-        });
 
     gui.add(animationController, "giroAntebrazoX", -90,90)
     .name("Giro AnteBrazo X ")
     .listen()
-    .onChange(a =>{  
-        antebrazo.rotation.x = a * Math.PI/180
-        });
 
     gui.add(animationController, "giroPinzas", -40,220)
     .name("Giro Pinza ")
     .listen()
-    .onChange(a =>{  
-        pinzas.rotation.y = a * Math.PI/180
-        });
 
     gui.add(animationController, "distanciaPinzas", 0,15)
     .name("Distancia pinzas ")
     .listen()
-    .onChange(d =>{  
-        pinzaMeshI.position.y = d
-        pinzaMeshD.position.y = -d
-        });
 
     gui.add( animationController, 'wireframe' )
     .name("Alambre")
     .listen()
     .onChange(w =>{
         if(matBase.wireframe) matBase.wireframe = false;
-        else matBase.wireframe = true;
-        });  // Checkbox
+        else matBase.wireframe = true;    
+    })
 
     gui.add( animationController, 'animacion' )
     .name("Animacion").listen() 
-    
 
-    
-
-    /*
-	h.add(animationController, "mensaje").name("Aplicacion");
-	h.add(animationController, "giroY", -180.0, 180.0, 0.025).name("Giro en Y");
-	h.add(animationController, "separacion", { 'Ninguna': 0, 'Media': 2, 'Total': 5 }).name("Separacion");
-    h.addColor(animationController, "colorsuelo").name("Color alambres");
-    */
 }
 
 function update() {
+    // En comparación al ejemplo de poliformat,
+    // debido a como se han declarado las dimensiones de la escena,
+    // en los controles los giros sobre el eje Z se han tranformado en giros sobre X
 
-    // Si se utilia la fucnion onChange de los controladores para ejecutar las animaciones,
-    // no se actualiza adecuadamene el GUI.
+    // Si se utiliza la fucnion onChange de los controladores para ejecutar las animaciones,
+    // no se actualiza adecuadamene el GUI al utilizar los interpoladores de TWEEN.
 
     robot.rotation.y = animationController.giroBase * Math.PI/180
+    brazo.rotation.x = animationController.giroBrazoEje * Math.PI/180
+    antebrazo.rotation.y = animationController.giroAntebrazoY * Math.PI/180
+    antebrazo.rotation.x = animationController.giroAntebrazoX * Math.PI/180
+    pinzas.rotation.y = animationController.giroPinzas * Math.PI/180
+    pinzaMeshI.position.y = animationController.distanciaPinzas
+    pinzaMeshD.position.y = -animationController.distanciaPinzas
+
     TWEEN.update();
     
     
