@@ -3,16 +3,18 @@ import * as CANNON from 'https://unpkg.com/cannon-es@0.19.0/dist/cannon-es.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.140.1/examples/jsm/controls/OrbitControls.js';
 import {TWEEN} from '../lib/tween.module.min.js'
 import {GUI} from '../lib/lil-gui.module.min.js'
+import {JoyStick} from './joystick.js'
 
 // Constantes y variables
 const materialSuelo = new CANNON.Material("materialSuelo");
 const materialEsfera = new CANNON.Material("materialEsfera");
 let renderer, scene, camera, cameraControls;
-let HUD;
+let joystick, HUD;
 let world;
 let pelota;
 
 // Metodos inicializadores
+
 init();
 loadWorld();
 //controles(); setupGUI
@@ -20,6 +22,7 @@ render();
 
 function init() {
 
+    joystick = new JoyStick({});
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(new THREE.Color(0xffffff));
@@ -42,7 +45,6 @@ function init() {
     cameraControls.target.set(0,0,0)
     window.addEventListener('resize', updateAspectRatio );
 }
-
 
 function aplicaLuces(){
     const luzAmb = new THREE.AmbientLight(0xd3d3d3);
