@@ -13,12 +13,15 @@ export class JoyStick{
 		document.body.appendChild(circle);
 		this.domElement = thumb;
 		this.maxRadius = options.maxRadius || 40;
+		this.posJoyX = 0.0;
+		this.posJoyY = 0.0;
 		this.maxRadiusSquared = this.maxRadius * this.maxRadius;
 		//this.onMove = options.onMove;
 		//this.game = options.game;
 		this.origin = { left:this.domElement.offsetLeft, top:this.domElement.offsetTop };
 		this.rotationDamping = options.rotationDamping || 0.06;
 		this.moveDamping = options.moveDamping || 0.01;
+
 		if (this.domElement!=undefined){
 			const joystick = this;
 			if ('ontouchstart' in window){
@@ -90,13 +93,15 @@ export class JoyStick{
 		this.domElement.style.left = `${this.origin.left}px`;
 		
 		//this.onMove.call(this.game, 0, 0);
-		this.joystickCallback(0,0)
+		this.joystickCallback(0.0,0.0)
 	}
 
 	joystickCallback( y, x ){
-		let a = -x;
-		let b = -y;
+		this.posJoyX = x;
+		this.posJoyY = y;
+		//let a = x
 	}
+
 }
 
 

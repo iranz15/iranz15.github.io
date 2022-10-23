@@ -8,10 +8,12 @@ import {JoyStick} from './joystick.js'
 // Constantes y variables
 const materialSuelo = new CANNON.Material("materialSuelo");
 const materialEsfera = new CANNON.Material("materialEsfera");
+const gradosRotacion = 20;
 let renderer, scene, camera, cameraControls;
 let joystick, HUD;
+let conts = 1;
 let world;
-let pelota;
+let pelota,planoBase;
 
 // Metodos inicializadores
 
@@ -20,9 +22,15 @@ loadWorld();
 //controles(); setupGUI
 render();
 
+function mapIntervalo( value, leftMin, leftMax, rightMin, rightMax )
+{
+  return rightMin + ( value - leftMin ) * ( rightMax - rightMin ) / ( leftMax - leftMin );
+}
+
 function init() {
 
     joystick = new JoyStick({});
+    console.log(joystick)
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(new THREE.Color(0xffffff));
@@ -84,14 +92,26 @@ function updateAspectRatio() {
 }
 
 
-function esfera( radio, posicion, material ){
-	var masa = 1;
+function esfera( radio, masa, posicion, material, material_textura ){
 	this.body = new CANNON.Body( {mass: masa, material: material} );
 	this.body.addShape( new CANNON.Sphere( radio ) );
 	this.body.position.copy( posicion );
-	this.visual = new THREE.Mesh( new THREE.SphereGeometry( radio ), 
-		          new THREE.MeshBasicMaterial( {wireframe: false } ) );
+	this.visual = new THREE.Mesh( new THREE.SphereGeometry( radio ), material_textura);
 	this.visual.position.copy( this.body.position );
+}
+
+function plano( ancho, material, material_textura){
+    const planeShape = new CANNON.Plane()
+    this.body = new CANNON.Body({ mass: 0,material: material})
+    this.body.addShape(planeShape)
+    this.body.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);
+
+
+    const planeGeometry = new THREE.PlaneGeometry(ancho, ancho)
+    this.visual = new THREE.Mesh(planeGeometry, material_textura)
+    this.visual.receiveShadow = true
+    this.visual.rotation.x = -Math.PI/2;
+
 }
 
 
@@ -113,12 +133,13 @@ function loadWorld() {
     const sueloTx = new THREE.TextureLoader().load(path + 'pisometalico_1024.jpg')
 
     // Materiales
-    const sueloMaterial = new THREE.MeshLambertMaterial({
+    const materialSueloAspecto = new THREE.MeshLambertMaterial({
         color: 'white',
         map: sueloTx
     })
 
     // Suelo
+    /*
     const planeGeometry = new THREE.PlaneGeometry(25, 25)
     const planeMesh = new THREE.Mesh(planeGeometry, sueloMaterial)
     planeMesh.rotateX(-Math.PI / 2)
@@ -129,19 +150,48 @@ function loadWorld() {
     planeBody.addShape(planeShape)
     planeBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2)
     world.addBody(planeBody)
-
+    */
+    planoBase = new plano( 40, materialSuelo, materialSueloAspecto );
+    world.addBody( planoBase.body );
+    scene.add( planoBase.visual );
     //Esfera
-    pelota = new esfera( 2, new CANNON.Vec3( -1, 10, 0 ), materialEsfera );
+    pelota = new esfera( 2, 40, new CANNON.Vec3( -1, 20, 0 ), materialEsfera, materialSueloAspecto );
     world.addBody( pelota.body );
     scene.add( pelota.visual );
+
+    //planeGeometry.holes.push( hole );
 }
 
 
 function update() {
     world.fixedStep();
+
+    let angleX = mapIntervalo ( joystick.posJoyX,-1,1,-gradosRotacion,gradosRotacion );
+    let angleY = mapIntervalo ( joystick.posJoyY,-1,1,-gradosRotacion,gradosRotacion ); 
+    console.log('X:',angleX,'  Y:',angleY)
+    let quatX = new CANNON.Quaternion();
+    let quatY = new CANNON.Quaternion();
+    let quatBase = new CANNON.Quaternion();
+    quatX.setFromAxisAngle(new CANNON.Vec3(0,0,-1), (Math.PI/180) * angleX);
+    quatY.setFromAxisAngle(new CANNON.Vec3(-1,0,0), (Math.PI/180) * angleY);
+    quatBase.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2)
+    let quaternion = quatX.mult(quatY).mult(quatBase);
+    quaternion.normalize();
+    planoBase.body.quaternion = quaternion;
+
+    
     pelota.visual.position.copy( pelota.body.position );
     pelota.visual.quaternion.copy( pelota.body.quaternion );
+    planoBase.visual.position.copy( planoBase.body.position );
+    planoBase.visual.quaternion.copy( planoBase.body.quaternion );
+
+
+
     TWEEN.update();
+    //console.log()
+
+
+    
 }
 
 
