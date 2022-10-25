@@ -10,7 +10,7 @@ let scene,camera,renderer,robot;
 let cameraControls, animationController;
 let brazo,antebrazo,pinzas,pinzaMeshI,pinzaMeshD,gui;
 let separadorPinzas = 8;
-let matBase, matPhong,matCubo,matRotula,matSuelo,matGold,matMetalG;
+let matBase, matPhong,matCubo,matRotula,matSuelo,matGold,matMetalG,matPinza;
 let L=100;
 let planta,alzado,perfil,cenital;
 let gb;
@@ -35,7 +35,7 @@ function init() {
     scene = new THREE.Scene();
     
     const ar = window.innerWidth/window.innerHeight;
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1200);
     camera.position.set(120, 250, 220);
     camera.lookAt(new THREE.Vector3(0, 135, 0));
 
@@ -49,30 +49,42 @@ function init() {
 }
 
 function aplicaLuces(){
-    luzAmb = new THREE.AmbientLight(0xd3d3d3);
+    var ambiental = new THREE.AmbientLight(0x000000);
+    scene.add(ambiental);
 
-    luzDir = new THREE.DirectionalLight(0xFFFFFF, 0.3);
-    luzDir.position.set(-1,1,-1);
+    let ratio = 200
+    luzDir = new THREE.DirectionalLight('white', 0.9);
+    luzDir.shadowCameraLeft = -ratio;
+    luzDir.shadowCameraRight = ratio;
+    luzDir.shadowCameraTop = ratio;
+    luzDir.position.set(0,100,300);
+    luzDir.shadowCameraFar = 800;
     luzDir.castShadow = true;
-    //let helper = new THREE.DirectionalLightHelper( luzDir, 1 );
-    //scene.add(helper)
+    scene.add(luzDir);
 
-    luzFocal = new THREE.SpotLight(0xFFFFFF,0.5)
-    luzFocal.position.set(-2,7,4)
-    luzFocal.target.position.set(0,0,0)
-    luzFocal.angle = Math.PI/7;
+
+    luzFocal = new THREE.SpotLight('white', 0.9);
+    luzFocal.position.set(300, 400, 150);
+    luzFocal.target.position.set(0, 0, 0);
+    luzFocal.angle = Math.PI / 7;
+    luzFocal.penumbra = 0.9;
+    scene.add(luzFocal.target);
     luzFocal.castShadow = true;
+    luzFocal.shadow.camera.far = 900;
+    scene.add(luzFocal);
 
-    luzPuntual = new THREE.PointLight(0xFFFFFF, 0.5);
-    luzPuntual.position.set(2,7,-4);
+
+    luzPuntual = new THREE.PointLight('white', 0.4);
+    luzPuntual.position.y = 350;
+    luzPuntual.position.x = 0;
+    luzPuntual.position.z = -100;
+    luzPuntual.shadowCameraFar = 800;
+
     luzPuntual.castShadow = true;
-
-    
     scene.add(luzPuntual);
-    scene.add(luzAmb);
-    scene.add(luzDir)
-    scene.add(luzFocal)
+
 }
+
 
 function setCameras(ar)
 {
@@ -125,6 +137,8 @@ function loadScene() {
 
     const geoHabitacion = new THREE.BoxGeometry(1000,1000,1000);
     const habitacion = new THREE.Mesh(geoHabitacion,paredes);
+    habitacion.position.y = 400
+    
     scene.add(habitacion)
     sueloTx.repeat.set(4,4);
     // s -> x, y-> t
@@ -137,11 +151,13 @@ function loadScene() {
     const entornoTx = new THREE.CubeTextureLoader().load(entorno);
     
     // objeto.scene.traverse() if obj3d ob.cstshadow = True.
+
+
     //Materiales
     // const matBase = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
     matBase = new THREE.MeshNormalMaterial({wireframe: false, flatShading: true});
     matCubo = new THREE.MeshLambertMaterial({color:'white',wireframe: false});
-    matMetalG = new THREE.MeshLambertMaterial({color:'white', map: metalTx});
+    matMetalG = new THREE.MeshPhongMaterial({color:'grey', map: metalTx});
 
     matRotula = new THREE.MeshPhongMaterial({color:'white',
                                              specular: 'white',
@@ -150,13 +166,17 @@ function loadScene() {
 
                                                 
     matGold = new THREE.MeshPhongMaterial({color:'white',
-                                            specular: 'white',
-                                            shininess: 30,
+                                            specular: 'black',
+                                            shininess: 2,
                                             map: metalGoldTx});
 
     matSuelo = new THREE.MeshLambertMaterial({color:'white',
                                             wireframe: false,
                                             map: sueloTx});
+
+    
+    matPinza = new THREE.MeshPhongMaterial({color:'#161c20',
+                                        wireframe: false});
 
 
     //Geometrias
@@ -354,7 +374,7 @@ function loadScene() {
     nervio4.position.set(-8, 34, 4);
   
 
-    const mano = new THREE.Mesh(geometriaMano, matBase)
+    const mano = new THREE.Mesh(geometriaMano, matMetalG)
 
 
     mano.rotateZ(Math.PI / 2);
@@ -364,8 +384,8 @@ function loadScene() {
     const pinzaI = new THREE.Object3D(); 
     const pinzaD = new THREE.Object3D().copy(pinzaI);
 
-    pinzaMeshI = new THREE.Mesh(geometriaPinza, matBase);
-    pinzaMeshD = new THREE.Mesh(geometriaPinza, matBase);
+    pinzaMeshI = new THREE.Mesh(geometriaPinza, matPinza);
+    pinzaMeshD = new THREE.Mesh(geometriaPinza, matPinza);
 
     pinzaI.add(pinzaMeshD);
     pinzaD.add(pinzaMeshI);
@@ -408,9 +428,15 @@ function loadScene() {
     pinzas.add(pinzaD);
 
 
-
     scene.add(suelo);
 
+
+    scene.traverse(ob=>{
+        if(ob.isObject3D) {
+            ob.castShadow = true;
+            ob.receiveShadow = true;
+        }
+    })
 }
 
 function render() {
